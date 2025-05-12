@@ -1,48 +1,71 @@
 import { Prompt } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 
 interface PromptListProps {
   prompts: Prompt[];
   isLoading: boolean;
   selectedPromptId: number | null;
   onSelectPrompt: (id: number) => void;
+  onClearChat?: () => void;
+  onStartChat?: () => void;
 }
 
-export function PromptList({ prompts, isLoading, selectedPromptId, onSelectPrompt }: PromptListProps) {
+export function PromptList({ 
+  prompts, 
+  isLoading, 
+  selectedPromptId, 
+  onSelectPrompt,
+  onClearChat,
+  onStartChat
+}: PromptListProps) {
+  const selectedPrompt = prompts.find(p => p.id === selectedPromptId);
+
   return (
-    <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
-      <div className="p-4 border-b border-gray-200">
-        <h2 className="text-lg font-medium text-gray-800">Available Prompts</h2>
-      </div>
-      <div className="flex-1 overflow-y-auto p-2">
-        {isLoading ? (
-          <div className="space-y-2 p-1">
-            {[...Array(4)].map((_, index) => (
-              <Skeleton key={index} className="h-9 w-full rounded-md" />
-            ))}
-          </div>
-        ) : prompts.length > 0 ? (
-          <ul className="space-y-1">
-            {prompts.map((prompt) => (
-              <li key={prompt.id}>
-                <button 
-                  onClick={() => onSelectPrompt(prompt.id)}
-                  className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium ${
-                    selectedPromptId === prompt.id 
-                      ? "text-gray-900 bg-gray-100" 
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
+    <div className="w-full">
+      <h2 className="text-lg font-medium text-gray-800 mb-2">Available Prompts</h2>
+      
+      {isLoading ? (
+        <Skeleton className="h-10 w-full mb-4" />
+      ) : (
+        <Select 
+          value={selectedPromptId?.toString()} 
+          onValueChange={(value) => onSelectPrompt(parseInt(value))}
+        >
+          <SelectTrigger className="w-full mb-4">
+            <SelectValue placeholder="Dropdown list of prompts" />
+          </SelectTrigger>
+          <SelectContent>
+            {prompts.length > 0 ? (
+              prompts.map((prompt) => (
+                <SelectItem key={prompt.id} value={prompt.id.toString()}>
                   {prompt.name}
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div className="text-center py-6 text-gray-500">
-            No prompts available
-          </div>
-        )}
+                </SelectItem>
+              ))
+            ) : (
+              <SelectItem value="none" disabled>No prompts available</SelectItem>
+            )}
+          </SelectContent>
+        </Select>
+      )}
+      
+      <div className="flex gap-2 mb-6">
+        <Button 
+          onClick={onStartChat}
+          className="bg-pink-200 hover:bg-pink-300 text-black"
+          disabled={!selectedPromptId || isLoading}
+        >
+          Start Chat
+        </Button>
+        <Button 
+          onClick={onClearChat}
+          className="bg-gray-100 hover:bg-gray-200 text-black"
+          disabled={!selectedPromptId || isLoading}
+        >
+          Clear Chat
+        </Button>
       </div>
     </div>
   );

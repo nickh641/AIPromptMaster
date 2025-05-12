@@ -10,6 +10,7 @@ import { Prompt, Message } from "@shared/schema";
 
 export default function ChatPage() {
   const [selectedPromptId, setSelectedPromptId] = useState<number | null>(null);
+  const [chatStarted, setChatStarted] = useState(false);
   const { toast } = useToast();
 
   // Fetch all prompts
@@ -20,7 +21,7 @@ export default function ChatPage() {
   // Fetch messages for selected prompt
   const { data: messages, isLoading: isLoadingMessages } = useQuery({
     queryKey: ["/api/prompts", selectedPromptId, "messages"],
-    enabled: selectedPromptId !== null,
+    enabled: selectedPromptId !== null && chatStarted,
   });
 
   // Select first prompt by default
@@ -55,9 +56,21 @@ export default function ChatPage() {
   });
 
   const handleSendMessage = async (content: string) => {
-    if (!content.trim()) return;
+    if (!content.trim() || !chatStarted) return;
     
     await sendMessageMutation.mutateAsync(content);
+  };
+
+  const handleStartChat = () => {
+    setChatStarted(true);
+  };
+
+  const handleClearChat = () => {
+    queryClient.removeQueries({ queryKey: ["/api/prompts", selectedPromptId, "messages"] });
+    setChatStarted(false);
+    setTimeout(() => {
+      setChatStarted(true);
+    }, 100);
   };
 
   const selectedPrompt = selectedPromptId && prompts 
@@ -65,68 +78,52 @@ export default function ChatPage() {
     : null;
 
   return (
-    <div className="flex h-full overflow-hidden">
-      {/* Prompt Sidebar */}
+    <div className="max-w-4xl mx-auto p-8 rounded-3xl border border-gray-300 bg-gray-50 shadow-sm my-8">
+      {/* Top Section with Prompt Selection */}
       <PromptList 
         prompts={prompts || []} 
         isLoading={isLoadingPrompts}
         selectedPromptId={selectedPromptId}
         onSelectPrompt={setSelectedPromptId}
+        onStartChat={handleStartChat}
+        onClearChat={handleClearChat}
       />
       
-      {/* Chat Interface */}
-      <div className="flex-1 flex flex-col">
-        {/* Chat header */}
-        <div className="bg-white border-b border-gray-200 p-4">
-          {isLoadingPrompts || !selectedPrompt ? (
-            <div className="space-y-2">
-              <Skeleton className="h-6 w-48" />
-              <Skeleton className="h-4 w-32" />
-            </div>
-          ) : (
-            <>
-              <h2 className="text-lg font-medium text-gray-800">{selectedPrompt.name}</h2>
-              <p className="text-sm text-gray-500">
-                Using: {selectedPrompt.model} · Temperature: {selectedPrompt.temperature}
-              </p>
-            </>
-          )}
-        </div>
-        
-        {/* Chat messages */}
-        <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-          {isLoadingMessages ? (
-            <div className="space-y-4">
-              {[...Array(3)].map((_, index) => (
-                <div key={index} className="flex items-start mb-4">
-                  <Skeleton className="h-8 w-8 rounded-full mr-3" />
-                  <Skeleton className="h-20 w-full max-w-3xl rounded-lg" />
-                </div>
-              ))}
-            </div>
-          ) : messages && messages.length > 0 ? (
-            messages.map((message: Message) => (
+      {/* Chat Messages Section */}
+      {chatStarted && selectedPrompt && (
+        <>
+          <h3 className="font-medium mb-2">Prompt Name</h3>
+          <div className="bg-white border border-gray-300 rounded-lg p-6 mb-4 min-h-[200px]">
+            {isLoadingMessages ? (
+              <div className="space-y-4">
+                {[...Array(2)].map((_, index) => (
+                  <Skeleton key={index} className="h-6 w-full" />
+                ))}
+              </div>
+            ) : messages && messages.length > 0 ? (
+              messages.map((message: Message) => (
+                <ChatMessage 
+                  key={message.id}
+                  content={message.content}
+                  isUser={message.isUser}
+                />
+              ))
+            ) : (
               <ChatMessage 
-                key={message.id}
-                content={message.content}
-                isUser={message.isUser}
+                content={`Hello! I'm your ${selectedPrompt.name}. How can I help you today?`}
+                isUser={false}
               />
-            ))
-          ) : selectedPrompt ? (
-            <ChatMessage 
-              content={`Hello! I'm your ${selectedPrompt.name}. How can I help you today?`}
-              isUser={false}
-            />
-          ) : null}
-        </div>
-        
-        {/* Message input */}
-        <ChatInput 
-          onSendMessage={handleSendMessage} 
-          isLoading={sendMessageMutation.isPending}
-          disabled={!selectedPromptId}
-        />
-      </div>
+            )}
+          </div>
+          
+          {/* Chat Input */}
+          <ChatInput 
+            onSendMessage={handleSendMessage} 
+            isLoading={sendMessageMutation.isPending}
+            disabled={!selectedPromptId || !chatStarted}
+          />
+        </>
+      )}
     </div>
   );
 }

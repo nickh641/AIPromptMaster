@@ -1,6 +1,6 @@
 import { useState, FormEvent } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Send } from "lucide-react";
 
 interface ChatInputProps {
@@ -22,28 +22,23 @@ export function ChatInput({ onSendMessage, isLoading, disabled = false }: ChatIn
   };
 
   return (
-    <div className="bg-white border-t border-gray-200 p-4">
-      <form onSubmit={handleSubmit} className="flex items-end">
-        <div className="flex-1 mr-4">
-          <Textarea 
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type your message here..."
-            rows={3}
-            className="resize-none border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-            disabled={isLoading || disabled}
-          />
-        </div>
+    <div className="w-full mt-4">
+      <form onSubmit={handleSubmit} className="flex space-x-2">
+        <Input 
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Chat entry"
+          className="flex-1"
+          disabled={isLoading || disabled}
+        />
         <Button 
           type="submit" 
-          className="inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="bg-pink-200 hover:bg-pink-300 text-black"
           disabled={!message.trim() || isLoading || disabled}
         >
           {isLoading ? (
-            <div className="h-5 w-5 border-2 border-t-transparent border-white rounded-full animate-spin mr-2"></div>
-          ) : (
-            <Send className="h-4 w-4 mr-2" />
-          )}
+            <div className="h-4 w-4 border-2 border-t-transparent border-black rounded-full animate-spin mr-1"></div>
+          ) : null}
           Send
         </Button>
       </form>
