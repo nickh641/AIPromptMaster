@@ -2,10 +2,12 @@ import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation } from "wouter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export function Navbar() {
-  const { user, isAdmin, isAuthenticated } = useAuth();
+  const { user, isAdmin, isAuthenticated, logout } = useAuth();
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
 
@@ -20,6 +22,10 @@ export function Navbar() {
     }
     
     setLocation(`/${value}`);
+  };
+
+  const handleLogout = () => {
+    logout();
   };
 
   return (
@@ -42,7 +48,7 @@ export function Navbar() {
                   <SelectItem value="admin">Admin View</SelectItem>
                 </SelectContent>
               </Select>
-              <div className="relative">
+              <div className="relative flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
                   <Avatar>
                     <AvatarFallback className="bg-gray-200 text-gray-500">
@@ -54,6 +60,15 @@ export function Navbar() {
                     {user?.isAdmin && " (Admin)"}
                   </span>
                 </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleLogout}
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  <LogOut className="h-4 w-4 mr-1" />
+                  Logout
+                </Button>
               </div>
             </div>
           </div>

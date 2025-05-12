@@ -23,23 +23,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  // For demo purposes, initialize with a user
+  // Check if user is already logged in
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    } else {
-      // Auto-login as regular user for demo
-      setUser({
-        id: 2,
-        username: "user",
-        isAdmin: false
-      });
-      localStorage.setItem("user", JSON.stringify({
-        id: 2,
-        username: "user",
-        isAdmin: false
-      }));
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        localStorage.removeItem("user");
+      }
     }
   }, []);
 
@@ -73,40 +65,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setLocation("/chat");
       }
-    } catch (error) {
-      toast({
-        title: "Login failed",
-        description: error.message,
-        variant: "destructive",
-      });
+    } catch (error: any) {
+      throw new Error(error.message || "Login failed");
     }
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
-    setLocation("/chat");
+    setLocation("/login");
     toast({
       title: "Logged out",
       description: "You have been successfully logged out.",
     });
-  };
-
-  // For demonstration purposes, we'll provide a simulated admin/user login
-  const simulateLogin = (isAdmin: boolean) => {
-    const userData = isAdmin 
-      ? { id: 1, username: "admin", isAdmin: true }
-      : { id: 2, username: "user", isAdmin: false };
-    
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
-    
-    // Redirect based on user role
-    if (isAdmin) {
-      setLocation("/admin");
-    } else {
-      setLocation("/chat");
-    }
   };
 
   return (
