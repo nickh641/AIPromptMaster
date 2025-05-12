@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,20 +12,26 @@ export default function AdminPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [editingPromptId, setEditingPromptId] = useState<number | null>(null);
-
-  // Redirect if not admin
+  
+  // Use an effect for redirects instead of doing it during render
+  useEffect(() => {
+    if (!isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "You need admin privileges to access this page.",
+        variant: "destructive"
+      });
+      setLocation("/chat");
+    }
+  }, [isAdmin, setLocation, toast]);
+  
+  // Return early if not admin to avoid rendering the admin content
   if (!isAdmin) {
-    toast({
-      title: "Access Denied",
-      description: "You need admin privileges to access this page.",
-      variant: "destructive"
-    });
-    setLocation("/chat");
     return null;
   }
 
   // Fetch all prompts
-  const { data: prompts, isLoading } = useQuery({
+  const { data: prompts, isLoading } = useQuery<Prompt[]>({
     queryKey: ["/api/prompts"],
   });
 
@@ -37,8 +43,10 @@ export default function AdminPage() {
     setEditingPromptId(null);
   };
 
-  const selectedPrompt = editingPromptId && prompts 
-    ? prompts.find((p: Prompt) => p.id === editingPromptId) 
+  const promptsArray = Array.isArray(prompts) ? prompts : [];
+  
+  const selectedPrompt = editingPromptId && promptsArray.length > 0
+    ? promptsArray.find((p) => p.id === editingPromptId) 
     : null;
 
   return (
@@ -88,7 +96,7 @@ export default function AdminPage() {
               <TabsContent value="manage" className="mt-2">
                 {isLoading ? (
                   <div className="text-center py-4">Loading prompts...</div>
-                ) : prompts && prompts.length > 0 ? (
+                ) : promptsArray.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
@@ -100,7 +108,7 @@ export default function AdminPage() {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {prompts.map((prompt: Prompt) => (
+                        {promptsArray.map((prompt) => (
                           <tr key={prompt.id}>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{prompt.name}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{prompt.model}</td>
