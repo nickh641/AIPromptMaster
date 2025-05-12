@@ -30,9 +30,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Prompt routes
   app.get("/api/prompts", async (_req, res) => {
     const prompts = await storage.getPrompts();
-    // Don't send API keys to the client
-    const sanitizedPrompts = prompts.map(({ apiKey, ...rest }) => rest);
-    res.json(sanitizedPrompts);
+    res.json(prompts);
   });
   
   app.get("/api/prompts/:id", async (req, res) => {
@@ -47,20 +45,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!prompt) {
       return res.status(404).json({ message: "Prompt not found" });
     }
-    
-    // Don't send API key to the client
-    const { apiKey, ...sanitizedPrompt } = prompt;
-    res.json(sanitizedPrompt);
+    res.json(prompt);
   });
   
   app.post("/api/prompts", async (req, res) => {
     try {
       const promptData = insertPromptSchema.parse(req.body);
       const prompt = await storage.createPrompt(promptData);
-      
-      // Don't send API key in response
-      const { apiKey, ...sanitizedPrompt } = prompt;
-      res.status(201).json(sanitizedPrompt);
+      res.status(201).json(prompt);
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
@@ -81,9 +73,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Prompt not found" });
       }
       
-      // Don't send API key in response
-      const { apiKey, ...sanitizedPrompt } = updatedPrompt;
-      res.json(sanitizedPrompt);
+      res.json(updatedPrompt);
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
@@ -145,7 +135,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let aiResponse: string;
       
       try {
-        const openai = new OpenAI({ apiKey: prompt.apiKey });
+        // Use environment variable for API key based on provider
+        let apiKey: string;
+        
+        switch (prompt.provider) {
+          case 'openai':
+            apiKey = process.env.OPENAI_API_KEY || '';
+            break;
+          case 'google':
+            apiKey = process.env.GOOGLE_API_KEY || '';
+            break;
+          case 'anthropic':
+            apiKey = process.env.ANTHROPIC_API_KEY || '';
+            break;
+          default:
+            apiKey = process.env.OPENAI_API_KEY || '';
+        }
+        
+        if (!apiKey) {
+          throw new Error(`API key not found for provider: ${prompt.provider}`);
+        }
+        
+        const openai = new OpenAI({ apiKey });
         
         // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
         const completion = await openai.chat.completions.create({
