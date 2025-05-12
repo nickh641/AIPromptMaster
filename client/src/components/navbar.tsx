@@ -39,7 +39,7 @@ export function Navbar() {
           </div>
           <div className="flex items-center">
             <div className="flex items-center space-x-4">
-              <span className="text-gray-600">{userRole}</span>
+              <span className="text-gray-600">{user?.username}</span>
               <Button 
                 variant="link" 
                 size="sm" 
