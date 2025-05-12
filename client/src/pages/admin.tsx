@@ -8,14 +8,18 @@ import { Prompt } from "@shared/schema";
 import { useLocation } from "wouter";
 
 export default function AdminPage() {
-  const { isAdmin, isChecking } = useAuth();
+  const { user, isAdmin, isChecking } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [editingPromptId, setEditingPromptId] = useState<number | null>(null);
 
+  // Debug admin status
+  console.log("Admin page - Auth state:", { user, isAdmin, isChecking });
+
   // Use an effect for redirects instead of doing it during render
   // Only redirect if we're done checking auth state and user is not admin
   useEffect(() => {
+    console.log("Admin useEffect - Auth state:", { user, isAdmin, isChecking });
     if (!isChecking && !isAdmin) {
       toast({
         title: "Access Denied",
@@ -24,7 +28,7 @@ export default function AdminPage() {
       });
       setLocation("/chat");
     }
-  }, [isChecking, isAdmin, setLocation, toast]);
+  }, [isChecking, isAdmin, user, setLocation, toast]);
 
   // Show loading state while checking auth
   if (isChecking) {
