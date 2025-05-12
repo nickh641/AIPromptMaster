@@ -59,16 +59,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: `Welcome back, ${userData.username}!`,
       });
 
-      // Update state and local storage
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
-
-      // Redirect based on user role after state is updated
+      // Redirect based on user role
       if (userData.isAdmin) {
-        setTimeout(() => setLocation("/admin"), 0);
-      } else {
-        setTimeout(() => setLocation("/chat"), 0);
-      }
+        setLocation("/admin");
       } else {
         setLocation("/chat");
       }
