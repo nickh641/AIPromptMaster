@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import { queryClient } from "./lib/queryClient";
 import ChatPage from "@/pages/chat";
+import ScenariosPage from "@/pages/scenarios";
 import AdminPage from "@/pages/admin";
 import LoginPage from "@/pages/login";
 import { useEffect, useState } from "react";
@@ -34,7 +35,7 @@ function Router() {
       navigate("/login");
     } else if (isAuthenticated && currentPath === "/login") {
       // Redirect to the appropriate page when logged in but still on login page
-      navigate(isAdmin ? "/admin" : "/chat");
+      navigate(isAdmin ? "/admin" : "/scenarios");
     }
   }, [isAuthenticated, isAdmin, navigate, isChecking]);
 
@@ -43,7 +44,7 @@ function Router() {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <div className="h-8 w-8 border-4 border-t-transparent border-blue-500 rounded-full animate-spin mx-auto mb-2"></div>
+          <div className="h-8 w-8 border-4 border-t-transparent border-teal-500 rounded-full animate-spin mx-auto mb-2"></div>
           <p className="text-gray-500">Loading...</p>
         </div>
       </div>
@@ -53,12 +54,15 @@ function Router() {
   return (
     <div className="flex flex-col h-screen">
       {isAuthenticated && <Navbar />}
-      <Switch>
-        <Route path="/login" component={LoginPage} />
-        <Route path="/chat" component={ChatPage} />
-        <Route path="/admin" component={AdminPage} />
-        <Route component={NotFound} />
-      </Switch>
+      <main className="flex-1 overflow-y-auto bg-white">
+        <Switch>
+          <Route path="/login" component={LoginPage} />
+          <Route path="/scenarios" component={ScenariosPage} />
+          <Route path="/chat" component={ChatPage} />
+          <Route path="/admin" component={AdminPage} />
+          <Route component={NotFound} />
+        </Switch>
+      </main>
     </div>
   );
 }
