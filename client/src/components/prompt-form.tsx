@@ -169,19 +169,7 @@ export function PromptForm({ promptData, onSuccess }: PromptFormProps) {
           )}
         />
         
-        <FormField
-          control={form.control}
-          name="apiKey"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{form.getValues("provider")} API Key:</FormLabel>
-              <FormControl>
-                <Input {...field} type="password" className="w-1/2" placeholder="Enter your API key" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        
         
         <FormField
           control={form.control}
