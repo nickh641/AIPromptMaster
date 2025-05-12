@@ -59,18 +59,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: `Welcome back, ${userData.username}!`,
       });
 
-      // Ensure redirect happens after state update
+      // Update state and local storage
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
-      
-      toast({
-        title: "Login successful",
-        description: `Welcome back, ${userData.username}!`,
-      });
 
-      // Redirect based on user role
+      // Redirect based on user role after state is updated
       if (userData.isAdmin) {
-        setLocation("/admin");
+        setTimeout(() => setLocation("/admin"), 0);
+      } else {
+        setTimeout(() => setLocation("/chat"), 0);
+      }
       } else {
         setLocation("/chat");
       }
