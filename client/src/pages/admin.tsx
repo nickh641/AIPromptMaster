@@ -22,7 +22,15 @@ export default function AdminPage() {
   // Only redirect if we're done checking auth state and user is not admin
   useEffect(() => {
     console.log("Admin useEffect - Auth state:", { user, isAdmin, isChecking });
-    if (!isChecking && !isAdmin) {
+    
+    // Check if we have a user in localStorage as a fallback
+    const storedUser = localStorage.getItem("user");
+    const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+    const hasAdminRights = isAdmin || (parsedUser && parsedUser.isAdmin);
+    
+    console.log("Admin access check:", { hasAdminRights, parsedUser });
+    
+    if (!isChecking && !hasAdminRights) {
       toast({
         title: "Access Denied",
         description: "You need admin privileges to access this page.",
@@ -44,8 +52,13 @@ export default function AdminPage() {
     );
   }
   
+  // Check if we have admin rights either from context or localStorage
+  const storedUser = localStorage.getItem("user");
+  const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+  const hasAdminRights = isAdmin || (parsedUser && parsedUser.isAdmin);
+  
   // Return early if not admin to avoid rendering the admin content
-  if (!isAdmin) {
+  if (!isChecking && !hasAdminRights) {
     return null;
   }
 
@@ -78,7 +91,7 @@ export default function AdminPage() {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900">Admin View</h2>
               <div className="flex items-center space-x-4">
-                <span className="text-gray-600">{user?.username}</span>
+                <span className="text-gray-600">{user?.username || parsedUser?.username || "admin"}</span>
                 <button 
                   onClick={logout}
                   className="text-gray-600 hover:text-gray-900"

@@ -27,14 +27,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check if user is already logged in
   useEffect(() => {
+    console.log("Checking authentication status from localStorage");
     const storedUser = localStorage.getItem("user");
+    
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        console.log("Found user in localStorage:", parsedUser);
+        setUser(parsedUser);
       } catch (e) {
+        console.error("Error parsing user from localStorage:", e);
         localStorage.removeItem("user");
       }
+    } else {
+      console.log("No user found in localStorage");
     }
+    
     // Signal that we've finished checking auth state
     setIsChecking(false);
   }, []);
@@ -56,33 +64,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const userData = await response.json();
       console.log("Login successful, user data:", userData); // Debug info
-      setUser(userData);
+      
+      // Store user data first
       localStorage.setItem("user", JSON.stringify(userData));
-
-      toast({
-        title: "Login successful",
-        description: `Welcome back, ${userData.username}!`,
-      });
-
-      // Redirect based on user role
-      if (userData.isAdmin) {
-        setLocation("/admin");
-      } else {
-        setLocation("/chat");
-      }
+      
+      // Update state and wait until next render to ensure the update is applied
+      setUser(userData);
+      
+      // Add a small delay to ensure state is updated before redirect
+      setTimeout(() => {
+        toast({
+          title: "Login successful",
+          description: `Welcome back, ${userData.username}!`,
+        });
+        
+        // Redirect based on user role
+        if (userData.isAdmin) {
+          console.log("Redirecting to admin page, userData:", userData);
+          setLocation("/admin");
+        } else {
+          setLocation("/chat");
+        }
+      }, 100);
     } catch (error: any) {
       throw new Error(error.message || "Login failed");
     }
   };
 
   const logout = () => {
+    // Clear user state
     setUser(null);
+    
+    // Remove from localStorage
     localStorage.removeItem("user");
-    setLocation("/login");
+    
+    // Show toast
     toast({
       title: "Logged out",
       description: "You have been successfully logged out.",
     });
+    
+    // Redirect to login page
+    setTimeout(() => {
+      setLocation("/login");
+    }, 50);
   };
 
   return (
