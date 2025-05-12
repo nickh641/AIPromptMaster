@@ -53,8 +53,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const promptData = insertPromptSchema.parse(req.body);
       const prompt = await storage.createPrompt(promptData);
       res.status(201).json(prompt);
-    } catch (error) {
-      res.status(400).json({ message: error.message });
+    } catch (error: unknown) {
+      res.status(400).json({ message: error instanceof Error ? error.message : "An unexpected error occurred" });
     }
   });
   
@@ -74,8 +74,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.json(updatedPrompt);
-    } catch (error) {
-      res.status(400).json({ message: error.message });
+    } catch (error: unknown) {
+      res.status(400).json({ message: error instanceof Error ? error.message : "An unexpected error occurred" });
     }
   });
   
@@ -211,8 +211,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userMessage,
         aiMessage
       });
-    } catch (error) {
-      res.status(400).json({ message: error.message });
+    } catch (error: unknown) {
+      res.status(400).json({ message: error instanceof Error ? error.message : "An unexpected error occurred" });
     }
   });
   
