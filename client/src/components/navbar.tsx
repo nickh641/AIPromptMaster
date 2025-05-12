@@ -34,7 +34,7 @@ export function Navbar() {
         <div className="flex justify-between h-14">
           <div className="flex items-center">
             <Link href={isAdmin ? "/admin" : "/chat"}>
-              <span className="text-xl font-bold text-gray-900 cursor-pointer">Crisis Line Training</span>
+              <span className="text-xl font-bold text-gray-900 cursor-pointer">AIPromptMaster</span>
             </Link>
           </div>
           <div className="flex items-center">
