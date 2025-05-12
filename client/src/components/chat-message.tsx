@@ -4,9 +4,10 @@ interface ChatMessageProps {
 }
 
 export function ChatMessage({ content, isUser }: ChatMessageProps) {
+  // For simplicity in the mockup style, we'll just show all messages the same way
   return (
-    <div className={`mb-4 ${isUser ? 'ml-auto max-w-[80%]' : 'max-w-[80%]'}`}>
-      <div className={`rounded-lg p-3 ${isUser ? 'bg-blue-100 ml-auto' : 'bg-gray-100'}`}>
+    <div className="w-full mb-3">
+      <div className="bg-white border border-gray-300 rounded-lg p-3">
         <p className="whitespace-pre-wrap text-gray-800">{content}</p>
       </div>
     </div>
