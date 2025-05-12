@@ -19,7 +19,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 const promptFormSchema = z.object({
   name: z.string().min(1, "Prompt name is required"),
   provider: z.string().min(1, "API provider is required"),
-  apiKey: z.string().min(1, "API key is required"),
+  apiKey: z.string().min(1, "API key is required"), // Still required but won't be stored in database
   model: z.string().min(1, "Model is required"),
   temperature: z.number().min(0).max(2),
   content: z.string().min(1, "Prompt content is required"),
@@ -44,7 +44,8 @@ export function PromptForm({ promptData, onSuccess }: PromptFormProps) {
     resolver: zodResolver(promptFormSchema),
     defaultValues: {
       name: promptData?.name || "",
-      apiKey: promptData?.apiKey || "", // Environment variables aren't available in browser
+      provider: promptData?.provider || "openai", // Default to OpenAI
+      apiKey: "", // API Key is not stored in DB so no default value
       model: promptData?.model || "gpt-4o",
       temperature: promptData?.temperature || 0.7,
       content: promptData?.content || "",
@@ -56,8 +57,11 @@ export function PromptForm({ promptData, onSuccess }: PromptFormProps) {
     mutationFn: async (values: PromptFormValues) => {
       if (!user) throw new Error("You must be logged in to create a prompt");
       
+      // Exclude API key from data sent to the server
+      const { apiKey, ...promptDataToSave } = values;
+      
       const promptPayload = {
-        ...values,
+        ...promptDataToSave,
         createdBy: user.id,
       };
       

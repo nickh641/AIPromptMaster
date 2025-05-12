@@ -13,7 +13,7 @@ export const prompts = pgTable("prompts", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   content: text("content").notNull(),
-  apiKey: text("api_key").notNull(),
+  provider: text("provider").notNull(),
   model: text("model").notNull(),
   temperature: real("temperature").notNull(),
   createdBy: integer("created_by").notNull(),
@@ -35,7 +35,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export const insertPromptSchema = createInsertSchema(prompts).pick({
   name: true,
-  apiKey: true,
+  provider: true,
   model: true,
   temperature: true,
   content: true,

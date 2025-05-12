@@ -191,10 +191,7 @@ export default function AdminPage() {
                             {prompt.name}
                           </td>
                           <td className="py-3 whitespace-nowrap text-sm text-gray-700">
-                            {prompt.model.toLowerCase().includes("gpt") ? "OpenAI" : 
-                             prompt.model.toLowerCase().includes("gemini") ? "Google" : 
-                             prompt.model.toLowerCase().includes("claude") ? "Anthropic" :
-                             prompt.apiKey ? "Custom Provider" : "None"}
+                            {prompt.provider ? prompt.provider.charAt(0).toUpperCase() + prompt.provider.slice(1) : "None"}
                           </td>
                           <td className="py-3 whitespace-nowrap text-sm text-gray-700">
                             {prompt.model}

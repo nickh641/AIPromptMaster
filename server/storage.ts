@@ -129,7 +129,7 @@ export class DatabaseStorage implements IStorage {
       console.log("Creating sample prompt...");
       await this.createPrompt({
         name: "Customer Support Assistant",
-        apiKey: process.env.OPENAI_API_KEY || "sk-dummy-key",
+        provider: "openai",
         model: "gpt-4o",
         temperature: 0.7,
         content: "You are a helpful customer support assistant. Answer customer questions politely and professionally.",
