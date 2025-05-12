@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
@@ -18,11 +18,24 @@ export default function AdminPage() {
   // Debug admin status
   console.log("Admin page - Auth state:", { user, isAdmin, isChecking });
 
+  // Check if user has admin privileges (either from context or localStorage)
+  const hasAdminPrivileges = useMemo(() => {
+    if (isAdmin) return true;
+    try {
+      const storedUser = localStorage.getItem("user");
+      if (!storedUser) return false;
+      const parsedUser = JSON.parse(storedUser);
+      return !!parsedUser.isAdmin;
+    } catch (e) {
+      return false;
+    }
+  }, [isAdmin]);
+
   // Fetch all prompts - declare this before any conditional returns
   const { data: prompts, isLoading } = useQuery<Prompt[]>({
     queryKey: ["/api/prompts"],
     // Disable the query if user is not admin to avoid unnecessary requests
-    enabled: isAdmin || (localStorage.getItem("user") && JSON.parse(localStorage.getItem("user") || "{}").isAdmin),
+    enabled: hasAdminPrivileges,
   });
 
   // Use an effect for redirects instead of doing it during render
