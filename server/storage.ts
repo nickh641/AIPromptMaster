@@ -1,4 +1,6 @@
 import { users, prompts, messages, type User, type InsertUser, type Prompt, type InsertPrompt, type Message, type InsertMessage } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -18,107 +20,126 @@ export interface IStorage {
   createMessage(message: InsertMessage): Promise<Message>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private prompts: Map<number, Prompt>;
-  private messages: Map<number, Message>;
-  private userId: number;
-  private promptId: number;
-  private messageId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.prompts = new Map();
-    this.messages = new Map();
-    this.userId = 1;
-    this.promptId = 1;
-    this.messageId = 1;
-    
-    // Create default admin user
-    this.createUser({
-      username: "admin",
-      password: "admin123",
-      isAdmin: true,
-    });
-    
-    // Create default user
-    this.createUser({
-      username: "user",
-      password: "user123",
-      isAdmin: false,
-    });
-    
-    // Create sample prompt
-    this.createPrompt({
-      name: "Customer Support Assistant",
-      apiKey: process.env.OPENAI_API_KEY || "sk-dummy-key",
-      model: "gpt-4o",
-      temperature: 0.7,
-      content: "You are a helpful customer support assistant. Answer customer questions politely and professionally.",
-      createdBy: 1,
-    });
-  }
-
+export class DatabaseStorage implements IStorage {
   // User operations
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.userId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
     return user;
   }
-  
+
   // Prompt operations
   async getPrompt(id: number): Promise<Prompt | undefined> {
-    return this.prompts.get(id);
-  }
-  
-  async getPrompts(): Promise<Prompt[]> {
-    return Array.from(this.prompts.values());
-  }
-  
-  async createPrompt(insertPrompt: InsertPrompt): Promise<Prompt> {
-    const id = this.promptId++;
-    const prompt: Prompt = { ...insertPrompt, id };
-    this.prompts.set(id, prompt);
+    const [prompt] = await db.select().from(prompts).where(eq(prompts.id, id));
     return prompt;
   }
-  
+
+  async getPrompts(): Promise<Prompt[]> {
+    return await db.select().from(prompts);
+  }
+
+  async createPrompt(insertPrompt: InsertPrompt): Promise<Prompt> {
+    const [prompt] = await db
+      .insert(prompts)
+      .values(insertPrompt)
+      .returning();
+    return prompt;
+  }
+
   async updatePrompt(id: number, promptData: Partial<InsertPrompt>): Promise<Prompt | undefined> {
-    const prompt = this.prompts.get(id);
-    if (!prompt) return undefined;
+    const [updatedPrompt] = await db
+      .update(prompts)
+      .set(promptData)
+      .where(eq(prompts.id, id))
+      .returning();
     
-    const updatedPrompt: Prompt = { ...prompt, ...promptData };
-    this.prompts.set(id, updatedPrompt);
     return updatedPrompt;
   }
-  
+
   async deletePrompt(id: number): Promise<boolean> {
-    return this.prompts.delete(id);
+    const [deletedPrompt] = await db
+      .delete(prompts)
+      .where(eq(prompts.id, id))
+      .returning();
+    
+    return !!deletedPrompt;
   }
-  
+
   // Message operations
   async getMessagesByPromptId(promptId: number): Promise<Message[]> {
-    return Array.from(this.messages.values())
-      .filter(message => message.promptId === promptId)
-      .sort((a, b) => a.id - b.id);
+    return await db
+      .select()
+      .from(messages)
+      .where(eq(messages.promptId, promptId))
+      .orderBy(messages.id);
   }
-  
+
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
-    const id = this.messageId++;
-    const message: Message = { ...insertMessage, id };
-    this.messages.set(id, message);
+    const [message] = await db
+      .insert(messages)
+      .values(insertMessage)
+      .returning();
     return message;
+  }
+
+  // Function to initialize the database with default data if needed
+  async initializeDefaultData() {
+    console.log("Initializing database with default data if needed...");
+    
+    // Check if we have an admin user
+    const adminUser = await this.getUserByUsername("admin");
+    
+    if (!adminUser) {
+      console.log("Creating default admin user...");
+      await this.createUser({
+        username: "admin",
+        password: "admin123",
+        isAdmin: true,
+      });
+    }
+    
+    // Check if we have a regular user
+    const regularUser = await this.getUserByUsername("user");
+    
+    if (!regularUser) {
+      console.log("Creating default regular user...");
+      await this.createUser({
+        username: "user",
+        password: "user123",
+        isAdmin: false,
+      });
+    }
+    
+    // Check if we have any prompts
+    const existingPrompts = await this.getPrompts();
+    
+    if (existingPrompts.length === 0) {
+      console.log("Creating sample prompt...");
+      await this.createPrompt({
+        name: "Customer Support Assistant",
+        apiKey: process.env.OPENAI_API_KEY || "sk-dummy-key",
+        model: "gpt-4o",
+        temperature: 0.7,
+        content: "You are a helpful customer support assistant. Answer customer questions politely and professionally.",
+        createdBy: 1,
+      });
+    }
+    
+    console.log("Database initialization complete.");
   }
 }
 
-export const storage = new MemStorage();
+// Create a new instance of DatabaseStorage
+export const storage = new DatabaseStorage();
