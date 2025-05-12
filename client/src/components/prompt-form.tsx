@@ -19,7 +19,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 const promptFormSchema = z.object({
   name: z.string().min(1, "Prompt name is required"),
   provider: z.string().min(1, "API provider is required"),
-  apiKey: z.string().min(1, "API key is required"),
   model: z.string().min(1, "Model is required"),
   temperature: z.number().min(0).max(2),
   content: z.string().min(1, "Prompt content is required"),
