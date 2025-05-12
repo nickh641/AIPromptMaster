@@ -12,6 +12,7 @@ export const users = pgTable("users", {
 export const prompts = pgTable("prompts", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
+  provider: text("provider").notNull(),
   apiKey: text("api_key").notNull(),
   model: text("model").notNull(),
   temperature: real("temperature").notNull(),

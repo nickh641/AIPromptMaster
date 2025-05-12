@@ -18,6 +18,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 // Form validation schema
 const promptFormSchema = z.object({
   name: z.string().min(1, "Prompt name is required"),
+  provider: z.string().min(1, "API provider is required"),
   apiKey: z.string().min(1, "API key is required"),
   model: z.string().min(1, "Model is required"),
   temperature: z.number().min(0).max(2),
@@ -147,10 +148,33 @@ export function PromptForm({ promptData, onSuccess }: PromptFormProps) {
         
         <FormField
           control={form.control}
+          name="provider"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>API Provider:</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger className="w-1/2">
+                    <SelectValue placeholder="Select a provider" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="openai">OpenAI</SelectItem>
+                  <SelectItem value="google">Google</SelectItem>
+                  <SelectItem value="anthropic">Anthropic</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
           name="apiKey"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>API Key:</FormLabel>
+              <FormLabel>{form.getValues("provider")} API Key:</FormLabel>
               <FormControl>
                 <Input {...field} type="password" className="w-1/2" placeholder="Enter your API key" />
               </FormControl>
