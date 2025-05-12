@@ -14,12 +14,14 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isChecking: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [isChecking, setIsChecking] = useState(true);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
@@ -33,6 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem("user");
       }
     }
+    // Signal that we've finished checking auth state
+    setIsChecking(false);
   }, []);
 
   const login = async (username: string, password: string) => {
@@ -88,6 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
         isAuthenticated: user !== null,
         isAdmin: user?.isAdmin || false,
+        isChecking,
       }}
     >
       {children}

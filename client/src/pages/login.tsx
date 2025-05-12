@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { z } from "zod";
@@ -18,10 +18,17 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const { login } = useAuth();
-  const [, setLocation] = useLocation();
+  const { login, isAuthenticated, isAdmin, isChecking } = useAuth();
+  const [, navigate] = useLocation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Redirect if already authenticated and not checking auth state
+  useEffect(() => {
+    if (!isChecking && isAuthenticated) {
+      navigate(isAdmin ? "/admin" : "/chat");
+    }
+  }, [isChecking, isAuthenticated, isAdmin, navigate]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
