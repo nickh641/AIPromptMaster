@@ -131,7 +131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       await storage.createMessage(userMessage);
       
-      // Get OpenAI response
+      // Get AI response
       let aiResponse: string;
       
       try {
@@ -156,22 +156,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
           throw new Error(`API key not found for provider: ${prompt.provider}`);
         }
         
-        const openai = new OpenAI({ apiKey });
-        
-        // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-        const completion = await openai.chat.completions.create({
-          model: prompt.model,
-          messages: [
-            { role: "system", content: prompt.content },
-            { role: "user", content: req.body.content }
-          ],
-          temperature: prompt.temperature,
-        });
-        
-        aiResponse = completion.choices[0].message.content || "Sorry, I couldn't generate a response.";
-      } catch (error) {
-        console.error("OpenAI API error:", error);
-        aiResponse = "Sorry, there was an error communicating with the AI service.";
+        // Different AI provider implementations
+        if (prompt.provider === 'openai') {
+          const openai = new OpenAI({ apiKey });
+          
+          try {
+            // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+            const completion = await openai.chat.completions.create({
+              model: prompt.model,
+              messages: [
+                { role: "system", content: prompt.content },
+                { role: "user", content: req.body.content }
+              ],
+              temperature: prompt.temperature,
+            });
+            
+            aiResponse = completion.choices[0].message.content || "Sorry, I couldn't generate a response.";
+          } catch (error: any) {
+            console.error("OpenAI API error:", error);
+            
+            // More detailed error handling for OpenAI errors
+            if (error.code === 'invalid_api_key') {
+              aiResponse = "Error: Invalid API key. Please ask the administrator to update the OpenAI API key.";
+            } else if (error.code === 'rate_limit_exceeded') {
+              aiResponse = "Error: Rate limit exceeded. Please try again in a few moments.";
+            } else {
+              aiResponse = `Error communicating with OpenAI: ${error.message || "Unknown error"}`;
+            }
+          }
+        } else if (prompt.provider === 'google') {
+          // Placeholder for Google AI implementation
+          aiResponse = "Support for Google AI is coming soon. Please use OpenAI provider for now.";
+        } else if (prompt.provider === 'anthropic') {
+          // Placeholder for Anthropic AI implementation
+          aiResponse = "Support for Anthropic AI is coming soon. Please use OpenAI provider for now.";
+        } else {
+          aiResponse = `Unknown provider: ${prompt.provider}`;
+        }
+      } catch (error: any) {
+        console.error("AI API error:", error);
+        aiResponse = `Error: ${error.message || "There was an error communicating with the AI service."}`;
       }
       
       // Save AI response

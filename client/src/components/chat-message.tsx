@@ -4,11 +4,26 @@ interface ChatMessageProps {
 }
 
 export function ChatMessage({ content, isUser }: ChatMessageProps) {
-  // For simplicity in the mockup style, we'll just show all messages the same way
+  // Check if the message content contains an error message
+  const isErrorMessage = !isUser && content.startsWith('Error:');
+  
   return (
     <div className="w-full mb-3">
-      <div className="bg-white border border-gray-300 rounded-lg p-3">
-        <p className="whitespace-pre-wrap text-gray-800">{content}</p>
+      <div className={`${isUser ? 'bg-blue-50' : 'bg-white'} ${isErrorMessage ? 'border-red-300 bg-red-50' : 'border-gray-300'} border rounded-lg p-3`}>
+        <div className="flex items-start">
+          <div className="flex-grow">
+            {isUser ? (
+              <p className="whitespace-pre-wrap text-gray-800">{content}</p>
+            ) : isErrorMessage ? (
+              <div>
+                <p className="font-medium text-red-600 mb-1">AI Service Error</p>
+                <p className="whitespace-pre-wrap text-red-600">{content}</p>
+              </div>
+            ) : (
+              <p className="whitespace-pre-wrap text-gray-800">{content}</p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

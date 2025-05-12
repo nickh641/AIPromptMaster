@@ -36,22 +36,34 @@ export default function ChatPage() {
     mutationFn: async (content: string) => {
       if (!selectedPromptId) throw new Error("No prompt selected");
       
+      // Send user message to API
       const response = await apiRequest(
         "POST", 
         `/api/prompts/${selectedPromptId}/messages`,
         { content }
       );
+      
+      // Check if the response is successful
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to send message");
+      }
+      
       return response.json();
     },
     onSuccess: () => {
+      // Refresh messages to get the AI response
       queryClient.invalidateQueries({ queryKey: ["/api/prompts", selectedPromptId, "messages"] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
-        title: "Error sending message",
-        description: error.message,
+        title: "Error in chat",
+        description: error.message || "There was a problem with the AI response. Please try again or contact an administrator.",
         variant: "destructive",
       });
+      
+      // Still refresh to show the user message without AI response
+      queryClient.invalidateQueries({ queryKey: ["/api/prompts", selectedPromptId, "messages"] });
     }
   });
 
