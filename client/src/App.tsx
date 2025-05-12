@@ -11,30 +11,35 @@ import { Navbar } from "@/components/navbar";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 
 function Router() {
-  const { isAuthenticated } = useAuth();
-  const [location, setLocation] = useState(() => 
-    window.location.pathname === "/" ? "/login" : window.location.pathname
-  );
+  const { isAuthenticated, isAdmin } = useAuth();
   const [, navigate] = useLocation();
-
+  
+  // Use the actual window.location.pathname instead of tracking in state
+  // This fixes navigation issues with login redirects
+  
   useEffect(() => {
     if (window.location.pathname === "/") {
       window.history.replaceState(null, "", "/login");
     }
   }, []);
 
-  // Redirect to login if not authenticated
+  // Handle authentication redirects
   useEffect(() => {
+    const currentPath = window.location.pathname;
+    
     if (!isAuthenticated && 
-        !["/login"].includes(window.location.pathname)) {
+        !["/login"].includes(currentPath)) {
       navigate("/login");
+    } else if (isAuthenticated && currentPath === "/login") {
+      // Redirect to the appropriate page when logged in but still on login page
+      navigate(isAdmin ? "/admin" : "/chat");
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isAdmin, navigate]);
 
   return (
     <div className="flex flex-col h-screen">
       {isAuthenticated && <Navbar />}
-      <Switch location={location}>
+      <Switch>
         <Route path="/login" component={LoginPage} />
         <Route path="/chat" component={ChatPage} />
         <Route path="/admin" component={AdminPage} />

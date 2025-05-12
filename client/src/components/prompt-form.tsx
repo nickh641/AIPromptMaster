@@ -43,7 +43,7 @@ export function PromptForm({ promptData, onSuccess }: PromptFormProps) {
     resolver: zodResolver(promptFormSchema),
     defaultValues: {
       name: promptData?.name || "",
-      apiKey: promptData?.apiKey || process.env.OPENAI_API_KEY || "",
+      apiKey: promptData?.apiKey || "", // Environment variables aren't available in browser
       model: promptData?.model || "gpt-4o",
       temperature: promptData?.temperature || 0.7,
       content: promptData?.content || "",
