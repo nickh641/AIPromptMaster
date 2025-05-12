@@ -179,7 +179,7 @@ export default function AdminPage() {
                     <thead>
                       <tr className="border-b border-gray-300">
                         <th className="py-2 text-left font-medium text-gray-900">Prompt name</th>
-                        <th className="py-2 text-left font-medium text-gray-900">API</th>
+                        <th className="py-2 text-left font-medium text-gray-900">API Provider</th>
                         <th className="py-2 text-left font-medium text-gray-900">Model</th>
                         <th className="py-2 text-left font-medium text-gray-900">Action</th>
                       </tr>
@@ -191,7 +191,10 @@ export default function AdminPage() {
                             {prompt.name}
                           </td>
                           <td className="py-3 whitespace-nowrap text-sm text-gray-700">
-                            {prompt.apiKey ? "OpenAI" : "None"}
+                            {prompt.model.toLowerCase().includes("gpt") ? "OpenAI" : 
+                             prompt.model.toLowerCase().includes("gemini") ? "Google" : 
+                             prompt.model.toLowerCase().includes("claude") ? "Anthropic" :
+                             prompt.apiKey ? "Custom Provider" : "None"}
                           </td>
                           <td className="py-3 whitespace-nowrap text-sm text-gray-700">
                             {prompt.model}

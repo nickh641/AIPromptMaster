@@ -150,9 +150,9 @@ export function PromptForm({ promptData, onSuccess }: PromptFormProps) {
           name="apiKey"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>API:</FormLabel>
+              <FormLabel>API Key:</FormLabel>
               <FormControl>
-                <Input {...field} type="password" className="w-1/2" />
+                <Input {...field} type="password" className="w-1/2" placeholder="Enter your API key" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -175,9 +175,18 @@ export function PromptForm({ promptData, onSuccess }: PromptFormProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="gpt-4o">GPT-4o</SelectItem>
-                  <SelectItem value="gpt-4">GPT-4</SelectItem>
-                  <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
+                  {/* OpenAI Models */}
+                  <SelectItem value="gpt-4o">OpenAI - GPT-4o</SelectItem>
+                  <SelectItem value="gpt-4">OpenAI - GPT-4</SelectItem>
+                  <SelectItem value="gpt-3.5-turbo">OpenAI - GPT-3.5 Turbo</SelectItem>
+                  
+                  {/* Google Models */}
+                  <SelectItem value="gemini-1.5-pro">Google - Gemini 1.5 Pro</SelectItem>
+                  <SelectItem value="gemini-1.5-flash">Google - Gemini 1.5 Flash</SelectItem>
+                  
+                  {/* Anthropic Models */}
+                  <SelectItem value="claude-3-opus">Anthropic - Claude 3 Opus</SelectItem>
+                  <SelectItem value="claude-3-sonnet">Anthropic - Claude 3 Sonnet</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
