@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PromptForm } from "@/components/prompt-form";
 import { useToast } from "@/hooks/use-toast";
@@ -175,15 +176,31 @@ export default function AdminPage() {
                               edit
                             </button>
                             <button
-                              onClick={() => {
-                                // Add delete functionality
+                              onClick={async () => {
                                 if (confirm("Are you sure you want to delete this prompt?")) {
-                                  // Implement delete logic here
-                                  toast({
-                                    title: "Not implemented",
-                                    description: "Delete functionality is not yet implemented.",
-                                    variant: "destructive",
-                                  });
+                                  try {
+                                    const response = await fetch(`/api/prompts/${prompt.id}`, {
+                                      method: "DELETE",
+                                    });
+                                    
+                                    if (response.ok) {
+                                      toast({
+                                        title: "Prompt deleted",
+                                        description: "The prompt was successfully deleted.",
+                                      });
+                                      // Refetch prompts by invalidating the query
+                                      await queryClient.invalidateQueries({ queryKey: ["/api/prompts"] });
+                                    } else {
+                                      const error = await response.json();
+                                      throw new Error(error.message || "Failed to delete prompt");
+                                    }
+                                  } catch (error: any) {
+                                    toast({
+                                      title: "Error",
+                                      description: error.message || "Failed to delete prompt",
+                                      variant: "destructive",
+                                    });
+                                  }
                                 }
                               }}
                               className="text-red-600 hover:text-red-900"
