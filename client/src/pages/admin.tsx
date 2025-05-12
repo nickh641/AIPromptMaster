@@ -18,6 +18,13 @@ export default function AdminPage() {
   // Debug admin status
   console.log("Admin page - Auth state:", { user, isAdmin, isChecking });
 
+  // Fetch all prompts - declare this before any conditional returns
+  const { data: prompts, isLoading } = useQuery<Prompt[]>({
+    queryKey: ["/api/prompts"],
+    // Disable the query if user is not admin to avoid unnecessary requests
+    enabled: isAdmin || (localStorage.getItem("user") && JSON.parse(localStorage.getItem("user") || "{}").isAdmin),
+  });
+
   // Use an effect for redirects instead of doing it during render
   // Only redirect if we're done checking auth state and user is not admin
   useEffect(() => {
@@ -61,11 +68,6 @@ export default function AdminPage() {
   if (!isChecking && !hasAdminRights) {
     return null;
   }
-
-  // Fetch all prompts
-  const { data: prompts, isLoading } = useQuery<Prompt[]>({
-    queryKey: ["/api/prompts"],
-  });
 
   const handleEditPrompt = (promptId: number) => {
     setEditingPromptId(promptId);
