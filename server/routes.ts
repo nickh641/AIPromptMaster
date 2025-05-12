@@ -1,0 +1,186 @@
+import type { Express, Request, Response } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { insertPromptSchema, insertMessageSchema } from "@shared/schema";
+import OpenAI from "openai";
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Auth routes
+  app.post("/api/auth/login", async (req, res) => {
+    const { username, password } = req.body;
+    
+    if (!username || !password) {
+      return res.status(400).json({ message: "Username and password are required" });
+    }
+    
+    const user = await storage.getUserByUsername(username);
+    
+    if (!user || user.password !== password) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+    
+    // In a real application, you would use JWT or sessions
+    res.json({
+      id: user.id,
+      username: user.username,
+      isAdmin: user.isAdmin
+    });
+  });
+  
+  // Prompt routes
+  app.get("/api/prompts", async (_req, res) => {
+    const prompts = await storage.getPrompts();
+    // Don't send API keys to the client
+    const sanitizedPrompts = prompts.map(({ apiKey, ...rest }) => rest);
+    res.json(sanitizedPrompts);
+  });
+  
+  app.get("/api/prompts/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid prompt ID" });
+    }
+    
+    const prompt = await storage.getPrompt(id);
+    
+    if (!prompt) {
+      return res.status(404).json({ message: "Prompt not found" });
+    }
+    
+    // Don't send API key to the client
+    const { apiKey, ...sanitizedPrompt } = prompt;
+    res.json(sanitizedPrompt);
+  });
+  
+  app.post("/api/prompts", async (req, res) => {
+    try {
+      const promptData = insertPromptSchema.parse(req.body);
+      const prompt = await storage.createPrompt(promptData);
+      
+      // Don't send API key in response
+      const { apiKey, ...sanitizedPrompt } = prompt;
+      res.status(201).json(sanitizedPrompt);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+  
+  app.put("/api/prompts/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid prompt ID" });
+    }
+    
+    try {
+      const promptData = insertPromptSchema.partial().parse(req.body);
+      const updatedPrompt = await storage.updatePrompt(id, promptData);
+      
+      if (!updatedPrompt) {
+        return res.status(404).json({ message: "Prompt not found" });
+      }
+      
+      // Don't send API key in response
+      const { apiKey, ...sanitizedPrompt } = updatedPrompt;
+      res.json(sanitizedPrompt);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+  
+  app.delete("/api/prompts/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid prompt ID" });
+    }
+    
+    const success = await storage.deletePrompt(id);
+    
+    if (!success) {
+      return res.status(404).json({ message: "Prompt not found" });
+    }
+    
+    res.status(204).end();
+  });
+  
+  // Message routes
+  app.get("/api/prompts/:promptId/messages", async (req, res) => {
+    const promptId = parseInt(req.params.promptId);
+    
+    if (isNaN(promptId)) {
+      return res.status(400).json({ message: "Invalid prompt ID" });
+    }
+    
+    const messages = await storage.getMessagesByPromptId(promptId);
+    res.json(messages);
+  });
+  
+  app.post("/api/prompts/:promptId/messages", async (req, res) => {
+    const promptId = parseInt(req.params.promptId);
+    
+    if (isNaN(promptId)) {
+      return res.status(400).json({ message: "Invalid prompt ID" });
+    }
+    
+    const prompt = await storage.getPrompt(promptId);
+    
+    if (!prompt) {
+      return res.status(404).json({ message: "Prompt not found" });
+    }
+    
+    try {
+      // Save the user message
+      const userMessage = insertMessageSchema.parse({
+        promptId,
+        content: req.body.content,
+        isUser: true,
+        timestamp: new Date().toISOString()
+      });
+      
+      await storage.createMessage(userMessage);
+      
+      // Get OpenAI response
+      let aiResponse: string;
+      
+      try {
+        const openai = new OpenAI({ apiKey: prompt.apiKey });
+        
+        // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        const completion = await openai.chat.completions.create({
+          model: prompt.model,
+          messages: [
+            { role: "system", content: prompt.content },
+            { role: "user", content: req.body.content }
+          ],
+          temperature: prompt.temperature,
+        });
+        
+        aiResponse = completion.choices[0].message.content || "Sorry, I couldn't generate a response.";
+      } catch (error) {
+        console.error("OpenAI API error:", error);
+        aiResponse = "Sorry, there was an error communicating with the AI service.";
+      }
+      
+      // Save AI response
+      const aiMessage = await storage.createMessage({
+        promptId,
+        content: aiResponse,
+        isUser: false,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Return both messages
+      res.status(201).json({
+        userMessage,
+        aiMessage
+      });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+  
+  const httpServer = createServer(app);
+  return httpServer;
+}
