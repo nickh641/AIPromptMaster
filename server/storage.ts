@@ -18,6 +18,7 @@ export interface IStorage {
   // Message operations
   getMessagesByPromptId(promptId: number): Promise<Message[]>;
   createMessage(message: InsertMessage): Promise<Message>;
+  deleteMessagesByPromptId(promptId: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -92,6 +93,14 @@ export class DatabaseStorage implements IStorage {
       .values(insertMessage)
       .returning();
     return message;
+  }
+  
+  async deleteMessagesByPromptId(promptId: number): Promise<boolean> {
+    const result = await db
+      .delete(messages)
+      .where(eq(messages.promptId, promptId));
+    
+    return true; // Will be true even if no messages were deleted
   }
 
   // Function to initialize the database with default data if needed

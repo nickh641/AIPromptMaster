@@ -23,6 +23,9 @@ export function ChatScreen({ promptId, promptName, onEndChat }: ChatScreenProps)
   const { data: messages = [], isLoading: isLoadingMessages } = useQuery<Message[]>({
     queryKey: ["/api/prompts", promptId, "messages"],
     enabled: !!promptId,
+    refetchInterval: 0, // Disable auto-refetching
+    staleTime: Infinity, // Keep data fresh until explicitly invalidated
+    refetchOnWindowFocus: false, // Don't refetch on window focus
   });
   
   // Mutation to initialize the chat with the first AI message
@@ -159,6 +162,7 @@ export function ChatScreen({ promptId, promptName, onEndChat }: ChatScreenProps)
                 ))}
               </div>
             ) : Array.isArray(messages) && messages.length > 0 ? (
+              console.log("Rendering messages:", messages) as any || 
               messages.map((message) => (
                 <ChatMessage 
                   key={message.id}

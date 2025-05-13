@@ -97,15 +97,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Message routes
-  app.get("/api/prompts/:promptId/messages", async (req, res) => {
+  // Clear chat history for a prompt
+  app.delete("/api/prompts/:promptId/messages", async (req, res) => {
     const promptId = parseInt(req.params.promptId);
     
+    console.log(`Clearing messages for prompt ID: ${promptId}`);
+    
     if (isNaN(promptId)) {
+      console.error("Invalid prompt ID:", req.params.promptId);
       return res.status(400).json({ message: "Invalid prompt ID" });
     }
     
-    const messages = await storage.getMessagesByPromptId(promptId);
-    res.json(messages);
+    try {
+      const success = await storage.deleteMessagesByPromptId(promptId);
+      res.status(200).json({ success });
+    } catch (error) {
+      console.error(`Error deleting messages for prompt ID ${promptId}:`, error);
+      res.status(500).json({ message: "Error deleting messages" });
+    }
+  });
+  
+  app.get("/api/prompts/:promptId/messages", async (req, res) => {
+    const promptId = parseInt(req.params.promptId);
+    
+    console.log(`Fetching messages for prompt ID: ${promptId}`);
+    
+    if (isNaN(promptId)) {
+      console.error("Invalid prompt ID:", req.params.promptId);
+      return res.status(400).json({ message: "Invalid prompt ID" });
+    }
+    
+    try {
+      const messages = await storage.getMessagesByPromptId(promptId);
+      console.log(`Found ${messages.length} messages for prompt ID: ${promptId}`);
+      res.json(messages);
+    } catch (error) {
+      console.error(`Error fetching messages for prompt ID ${promptId}:`, error);
+      res.status(500).json({ message: "Error fetching messages" });
+    }
   });
   
   // Initialize a chat - send the initial prompt to the AI without a user message

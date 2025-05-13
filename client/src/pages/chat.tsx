@@ -45,8 +45,13 @@ export default function ChatPage() {
 
   // End the chat session
   const handleEndChat = () => {
+    // End chat session
     setChatStarted(false);
-    queryClient.removeQueries({ queryKey: ["/api/prompts", selectedPromptId, "messages"] });
+    
+    // Invalidate the messages query to ensure we get fresh data next time
+    if (selectedPromptId) {
+      queryClient.invalidateQueries({ queryKey: ["/api/prompts", selectedPromptId, "messages"] });
+    }
     
     toast({
       title: "Chat ended",
