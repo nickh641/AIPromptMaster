@@ -8,21 +8,23 @@ export function ChatMessage({ content, isUser }: ChatMessageProps) {
   const isErrorMessage = !isUser && content.startsWith('Error:');
   
   return (
-    <div className="w-full mb-3">
-      <div className={`${isUser ? 'bg-blue-50' : 'bg-white'} ${isErrorMessage ? 'border-red-300 bg-red-50' : 'border-gray-300'} border rounded-lg p-3`}>
-        <div className="flex items-start">
-          <div className="flex-grow">
-            {isUser ? (
-              <p className="whitespace-pre-wrap text-gray-800">{content}</p>
-            ) : isErrorMessage ? (
-              <div>
-                <p className="font-medium text-red-600 mb-1">AI Service Error</p>
-                <p className="whitespace-pre-wrap text-red-600">{content}</p>
-              </div>
-            ) : (
-              <p className="whitespace-pre-wrap text-gray-800">{content}</p>
-            )}
-          </div>
+    <div className="w-full mb-4">
+      <div className={`${isUser ? 'mr-auto' : 'ml-auto'} max-w-[80%]`}>
+        <div className={`
+          ${isUser ? 'border-2 border-gray-300 bg-white' : 'bg-blue-200 border-blue-300'} 
+          ${isErrorMessage ? 'border-red-300 bg-red-50' : ''} 
+          border rounded-lg p-3
+        `}>
+          {isUser ? (
+            <p className="whitespace-pre-wrap text-gray-800">{content}</p>
+          ) : isErrorMessage ? (
+            <div>
+              <p className="font-medium text-red-600 mb-1">AI Service Error</p>
+              <p className="whitespace-pre-wrap text-red-600">{content}</p>
+            </div>
+          ) : (
+            <p className="whitespace-pre-wrap text-gray-800">{content}</p>
+          )}
         </div>
       </div>
     </div>
