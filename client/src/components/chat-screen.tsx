@@ -95,32 +95,28 @@ export function ChatScreen({ promptId, promptName, onEndChat }: ChatScreenProps)
     }
   });
 
-  // Initialize chat when component mounts
+  // Initialize chat when component mounts or when messages are empty
   useEffect(() => {
-    // Reset initialized state when prompt changes
-    if (promptId) {
-      setInitialized(false);
-    }
-    
-    // Check if we already have messages or are in the process of initializing
-    if (
-      promptId &&
+    const shouldInitialize = 
+      promptId && 
       !initialized && 
       !isLoadingMessages && 
       Array.isArray(messages) && 
       messages.length === 0 && 
-      !initializeChatMutation.isPending
-    ) {
+      !initializeChatMutation.isPending;
+    
+    if (shouldInitialize) {
       console.log(`Initializing chat for prompt ${promptId}`);
       // Initialize the chat with AI's first response
       initializeChatMutation.mutate();
       setInitialized(true);
     }
   }, [
-    initialized, 
-    messages, 
-    isLoadingMessages, 
-    promptId
+    initialized,
+    messages,
+    isLoadingMessages,
+    promptId,
+    initializeChatMutation
   ]);
   
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -162,7 +158,6 @@ export function ChatScreen({ promptId, promptName, onEndChat }: ChatScreenProps)
                 ))}
               </div>
             ) : Array.isArray(messages) && messages.length > 0 ? (
-              console.log("Rendering messages:", messages) as any || 
               messages.map((message) => (
                 <ChatMessage 
                   key={message.id}

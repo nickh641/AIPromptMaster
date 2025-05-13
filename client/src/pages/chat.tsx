@@ -24,7 +24,7 @@ export default function ChatPage() {
   }, [prompts, selectedPromptId]);
 
   // Initialize chat session
-  const handleStartChat = () => {
+  const handleStartChat = async () => {
     if (!selectedPromptId) {
       toast({
         title: "No prompt selected",
@@ -36,11 +36,26 @@ export default function ChatPage() {
     
     console.log(`Starting chat with prompt ID: ${selectedPromptId}`);
     
-    // Clear any previous messages for this prompt
-    queryClient.removeQueries({ queryKey: ["/api/prompts", selectedPromptId, "messages"] });
-    
-    // Start the chat
-    setChatStarted(true);
+    try {
+      // Clear previous chat history on the server
+      await fetch(`/api/prompts/${selectedPromptId}/messages`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      
+      // Clear any previous messages from the cache
+      queryClient.removeQueries({ queryKey: ["/api/prompts", selectedPromptId, "messages"] });
+      
+      // Start the chat session
+      setChatStarted(true);
+    } catch (error) {
+      console.error("Error starting chat:", error);
+      toast({
+        title: "Error",
+        description: "Failed to start chat. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   // End the chat session
@@ -60,16 +75,36 @@ export default function ChatPage() {
   };
 
   // Clear the chat and start fresh
-  const handleClearChat = () => {
+  const handleClearChat = async () => {
     if (!selectedPromptId) return;
     
-    queryClient.removeQueries({ queryKey: ["/api/prompts", selectedPromptId, "messages"] });
-    setChatStarted(false);
-    
-    toast({
-      title: "Chat cleared",
-      description: "Starting a new conversation.",
-    });
+    try {
+      // Call the DELETE endpoint to clear message history on the server
+      const response = await fetch(`/api/prompts/${selectedPromptId}/messages`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to clear chat history");
+      }
+      
+      // Remove messages from cache
+      queryClient.removeQueries({ queryKey: ["/api/prompts", selectedPromptId, "messages"] });
+      setChatStarted(false);
+      
+      toast({
+        title: "Chat cleared",
+        description: "Starting a new conversation.",
+      });
+    } catch (error) {
+      console.error("Error clearing chat:", error);
+      toast({
+        title: "Error",
+        description: "Failed to clear chat history. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const selectedPrompt = selectedPromptId && Array.isArray(prompts) && prompts.length > 0
