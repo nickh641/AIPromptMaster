@@ -120,7 +120,7 @@ export default function ChatPage() {
   return (
     <div className="max-w-4xl mx-auto p-8 rounded-3xl border-2 border-gray-300 bg-white shadow-sm my-8">
       {/* Top Section with Prompt Selection in a Card */}
-      <div className="mb-8 p-6 border-2 border-gray-300 rounded-3xl bg-gray-50">
+      <div className="mb-8 p-6 border-2 border-gray-300 rounded-3xl">
         <PromptList 
           prompts={Array.isArray(prompts) ? prompts : []} 
           isLoading={isLoadingPrompts}
@@ -132,9 +132,9 @@ export default function ChatPage() {
       </div>
       
       {/* Chat Messages Section */}
-      {chatStarted && selectedPrompt && (
+      {chatStarted && selectedPrompt ? (
         <>
-          <div className="bg-white rounded-lg mb-4 min-h-[200px] max-h-[400px] overflow-y-auto">
+          <div className="bg-white rounded-lg mb-4 min-h-[300px] max-h-[400px] overflow-y-auto p-4">
             {isLoadingMessages ? (
               <div className="space-y-4">
                 {[...Array(2)].map((_, index) => (
@@ -165,6 +165,10 @@ export default function ChatPage() {
             disabled={!selectedPromptId || !chatStarted}
           />
         </>
+      ) : (
+        <div className="text-center p-8 text-gray-500">
+          Select a prompt and click "Start Chat" to begin a conversation
+        </div>
       )}
     </div>
   );

@@ -25,7 +25,7 @@ export function PromptList({
 
   return (
     <div className="w-full">
-      <h2 className="text-lg font-medium text-gray-800 mb-2">Available Prompts</h2>
+      <h2 className="text-lg font-serif font-medium text-black mb-4">Available Prompts</h2>
       
       {isLoading ? (
         <Skeleton className="h-10 w-full mb-4" />
@@ -34,7 +34,7 @@ export function PromptList({
           value={selectedPromptId?.toString()} 
           onValueChange={(value) => onSelectPrompt(parseInt(value))}
         >
-          <SelectTrigger className="w-full mb-4">
+          <SelectTrigger className="w-full mb-4 border-2 border-gray-300 rounded-md bg-white">
             <SelectValue placeholder="Dropdown list of prompts" />
           </SelectTrigger>
           <SelectContent>
@@ -51,20 +51,20 @@ export function PromptList({
         </Select>
       )}
       
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-4 mt-4">
         <Button 
           onClick={onStartChat}
-          className="bg-pink-200 hover:bg-pink-300 text-black"
+          className="bg-pink-200 hover:bg-pink-300 text-black rounded-md border border-pink-300 px-6 font-medium"
           disabled={!selectedPromptId || isLoading}
         >
           Start Chat
         </Button>
         <Button 
           onClick={onClearChat}
-          className="bg-gray-100 hover:bg-gray-200 text-black"
+          className="bg-white hover:bg-gray-100 text-black border border-gray-300 rounded-md px-6 font-medium"
           disabled={!selectedPromptId || isLoading}
         >
-          Clear Chat
+          Clear chat
         </Button>
       </div>
     </div>

@@ -23,17 +23,17 @@ export function ChatInput({ onSendMessage, isLoading, disabled = false }: ChatIn
 
   return (
     <div className="w-full mt-4">
-      <form onSubmit={handleSubmit} className="flex space-x-2">
+      <form onSubmit={handleSubmit} className="flex space-x-3">
         <Input 
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Chat entry"
-          className="flex-1"
+          className="flex-1 border-2 border-gray-300 rounded-md bg-white py-2"
           disabled={isLoading || disabled}
         />
         <Button 
           type="submit" 
-          className="bg-pink-200 hover:bg-pink-300 text-black"
+          className="bg-pink-200 hover:bg-pink-300 text-black rounded-md border border-pink-300 px-6 font-medium"
           disabled={!message.trim() || isLoading || disabled}
         >
           {isLoading ? (
