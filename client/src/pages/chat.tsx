@@ -118,22 +118,23 @@ export default function ChatPage() {
     : null;
 
   return (
-    <div className="max-w-4xl mx-auto p-8 rounded-3xl border border-gray-300 bg-gray-50 shadow-sm my-8">
-      {/* Top Section with Prompt Selection */}
-      <PromptList 
-        prompts={Array.isArray(prompts) ? prompts : []} 
-        isLoading={isLoadingPrompts}
-        selectedPromptId={selectedPromptId}
-        onSelectPrompt={setSelectedPromptId}
-        onStartChat={handleStartChat}
-        onClearChat={handleClearChat}
-      />
+    <div className="max-w-4xl mx-auto p-8 rounded-3xl border-2 border-gray-300 bg-white shadow-sm my-8">
+      {/* Top Section with Prompt Selection in a Card */}
+      <div className="mb-8 p-6 border-2 border-gray-300 rounded-3xl bg-gray-50">
+        <PromptList 
+          prompts={Array.isArray(prompts) ? prompts : []} 
+          isLoading={isLoadingPrompts}
+          selectedPromptId={selectedPromptId}
+          onSelectPrompt={setSelectedPromptId}
+          onStartChat={handleStartChat}
+          onClearChat={handleClearChat}
+        />
+      </div>
       
       {/* Chat Messages Section */}
       {chatStarted && selectedPrompt && (
         <>
-          <h3 className="font-medium mb-2">Prompt Name</h3>
-          <div className="bg-white border border-gray-300 rounded-lg p-6 mb-4 min-h-[200px] max-h-[400px] overflow-y-auto">
+          <div className="bg-white rounded-lg mb-4 min-h-[200px] max-h-[400px] overflow-y-auto">
             {isLoadingMessages ? (
               <div className="space-y-4">
                 {[...Array(2)].map((_, index) => (
@@ -151,14 +152,7 @@ export default function ChatPage() {
             ) : (
               // Initial welcome message showing details from the selected prompt
               <ChatMessage 
-                content={`Hello! I'm your ${selectedPrompt.name} assistant.
-                
-I'm configured with:
-- Model: ${selectedPrompt.model}
-- Temperature: ${selectedPrompt.temperature}
-- Provider: ${selectedPrompt.provider}
-
-How can I help you today?`}
+                content={`Hello! I'm your ${selectedPrompt.name} assistant. How can I help you today?`}
                 isUser={false}
               />
             )}
