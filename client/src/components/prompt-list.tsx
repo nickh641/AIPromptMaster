@@ -59,13 +59,6 @@ export function PromptList({
         >
           Start Chat
         </Button>
-        <Button 
-          onClick={onClearChat}
-          className="bg-white hover:bg-gray-100 text-black border border-gray-300 rounded-md px-6 font-medium"
-          disabled={!selectedPromptId || isLoading}
-        >
-          Clear chat
-        </Button>
       </div>
     </div>
   );
