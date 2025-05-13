@@ -50,15 +50,23 @@ function Router() {
     );
   }
   
+  // Get current path
+  const [path] = useLocation();
+  
+  // Don't show the navbar on chat page to allow for full-screen chat experience
+  const showNavbar = isAuthenticated && path !== "/chat";
+  
   return (
-    <div className="flex flex-col h-screen">
-      {isAuthenticated && <Navbar />}
-      <Switch>
-        <Route path="/login" component={LoginPage} />
-        <Route path="/chat" component={ChatPage} />
-        <Route path="/admin" component={AdminPage} />
-        <Route component={NotFound} />
-      </Switch>
+    <div className="flex flex-col h-screen overflow-hidden">
+      {showNavbar && <Navbar />}
+      <div className={`${showNavbar ? 'flex-1' : 'h-screen'} overflow-hidden`}>
+        <Switch>
+          <Route path="/login" component={LoginPage} />
+          <Route path="/chat" component={ChatPage} />
+          <Route path="/admin" component={AdminPage} />
+          <Route component={NotFound} />
+        </Switch>
+      </div>
     </div>
   );
 }

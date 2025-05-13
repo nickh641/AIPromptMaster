@@ -82,17 +82,19 @@ export default function ChatPage() {
 
   // Otherwise, show the prompt selection screen
   return (
-    <div className="max-w-4xl mx-auto p-8 rounded-3xl border-2 border-gray-300 bg-white shadow-sm my-8">
-      {/* Prompt Selection in a Card */}
-      <div className="p-6 border-2 border-gray-300 rounded-3xl">
-        <PromptList 
-          prompts={Array.isArray(prompts) ? prompts : []} 
-          isLoading={isLoadingPrompts}
-          selectedPromptId={selectedPromptId}
-          onSelectPrompt={setSelectedPromptId}
-          onStartChat={handleStartChat}
-          onClearChat={handleClearChat}
-        />
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="w-full max-w-2xl rounded-3xl border-2 border-gray-300 bg-white shadow-md">
+        {/* Prompt Selection in a Card */}
+        <div className="p-8 rounded-3xl">
+          <PromptList 
+            prompts={Array.isArray(prompts) ? prompts : []} 
+            isLoading={isLoadingPrompts}
+            selectedPromptId={selectedPromptId}
+            onSelectPrompt={setSelectedPromptId}
+            onStartChat={handleStartChat}
+            onClearChat={handleClearChat}
+          />
+        </div>
       </div>
     </div>
   );

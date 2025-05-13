@@ -70,66 +70,74 @@ export function ChatScreen({ promptId, promptName, onEndChat }: ChatScreenProps)
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-8 rounded-3xl border-2 border-gray-300 bg-white shadow-sm">
-      {/* Prompt name at the top */}
-      <div className="mb-4 flex items-center">
-        <span className="font-medium mr-2">Prompt:</span>
-        <span className="border border-gray-300 rounded px-2 py-1 bg-gray-50">{promptName}</span>
-      </div>
-      
-      {/* Chat Messages Section */}
-      <div className="bg-white border-2 border-gray-300 rounded-xl p-6 mb-4 min-h-[300px] max-h-[400px] overflow-y-auto">
-        {isLoadingMessages ? (
-          <div className="space-y-4">
-            {[...Array(2)].map((_, index) => (
-              <Skeleton key={index} className="h-6 w-full" />
-            ))}
+    <div className="h-screen flex flex-col bg-gray-50">
+      {/* Header with prompt name */}
+      <header className="bg-white border-b border-gray-200 py-4 px-6 shadow-sm">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center">
+            <span className="font-medium mr-2 text-gray-700">Prompt:</span>
+            <span className="border border-gray-300 rounded-md px-3 py-1 bg-white text-gray-800 font-medium">{promptName}</span>
           </div>
-        ) : Array.isArray(messages) && messages.length > 0 ? (
-          messages.map((message) => (
-            <ChatMessage 
-              key={message.id}
-              content={message.content}
-              isUser={message.isUser}
-            />
-          ))
-        ) : (
-          <ChatMessage 
-            content={`Hello! I'm your ${promptName} assistant. How can I help you today?`}
-            isUser={false}
-          />
-        )}
-      </div>
-      
-      {/* Chat Input and Buttons */}
-      <div className="flex flex-col space-y-2">
-        <form onSubmit={handleSendMessage} className="flex space-x-3">
-          <Input 
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type your message here..."
-            className="flex-1 border-2 border-gray-300 rounded-md bg-white py-2"
-            disabled={sendMessageMutation.isPending}
-          />
           <Button 
-            type="submit" 
-            className="bg-pink-200 hover:bg-pink-300 text-black rounded-md border border-pink-300 px-6 font-medium"
-            disabled={!message.trim() || sendMessageMutation.isPending}
+            onClick={onEndChat}
+            className="bg-green-100 hover:bg-green-200 text-green-800 border border-green-300 rounded-md px-4 py-2 font-medium text-sm"
           >
-            {sendMessageMutation.isPending ? (
-              <div className="h-4 w-4 border-2 border-t-transparent border-black rounded-full animate-spin mr-1"></div>
-            ) : null}
-            Send
+            End chat
           </Button>
-        </form>
-        
-        <Button 
-          onClick={onEndChat}
-          className="bg-green-200 hover:bg-green-300 text-black border border-green-300 rounded-md px-6 font-medium self-end"
-        >
-          End chat
-        </Button>
-      </div>
+        </div>
+      </header>
+      
+      {/* Main chat area - takes up all available space */}
+      <main className="flex-1 overflow-hidden relative">
+        <div className="max-w-5xl mx-auto h-full flex flex-col pt-6 px-6">
+          {/* Chat Messages Section - scrollable area that takes most space */}
+          <div className="flex-1 overflow-y-auto mb-6 pr-2">
+            {isLoadingMessages ? (
+              <div className="space-y-6 py-4">
+                {[...Array(3)].map((_, index) => (
+                  <Skeleton key={index} className="h-16 w-full" />
+                ))}
+              </div>
+            ) : Array.isArray(messages) && messages.length > 0 ? (
+              messages.map((message) => (
+                <ChatMessage 
+                  key={message.id}
+                  content={message.content}
+                  isUser={message.isUser}
+                />
+              ))
+            ) : (
+              <ChatMessage 
+                content={`Hello! I'm your ${promptName} assistant. How can I help you today?`}
+                isUser={false}
+              />
+            )}
+          </div>
+          
+          {/* Input area fixed at bottom */}
+          <div className="py-4 border-t border-gray-200 bg-gray-50">
+            <form onSubmit={handleSendMessage} className="flex items-end gap-3 max-w-5xl mx-auto">
+              <Input 
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Type your message here..."
+                className="flex-1 border-2 border-gray-300 rounded-md bg-white py-3 px-4 focus:border-blue-400 focus:ring-blue-300"
+                disabled={sendMessageMutation.isPending}
+              />
+              <Button 
+                type="submit" 
+                className="bg-pink-200 hover:bg-pink-300 text-black rounded-md border border-pink-300 px-6 py-3 font-medium"
+                disabled={!message.trim() || sendMessageMutation.isPending}
+              >
+                {sendMessageMutation.isPending ? (
+                  <div className="h-4 w-4 border-2 border-t-transparent border-black rounded-full animate-spin mr-2"></div>
+                ) : null}
+                Send
+              </Button>
+            </form>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
