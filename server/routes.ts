@@ -158,7 +158,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               model: prompt.model,
               messages: [
                 { role: "system", content: prompt.content }
-              ],
+              ] as ChatCompletionMessageParam[],
               temperature: prompt.temperature,
             });
             
@@ -269,14 +269,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             // Add conversation history
             if (conversationHistory && conversationHistory.length > 0) {
-              for (const msg of conversationHistory) {
-                // Skip the initial AI message as we've already added the system prompt
-                if (!msg.isUser) continue;
+              // We need to add messages in pairs (user then AI) to maintain conversation flow
+              // Skip the initial AI message (if exists) as we've already added the system prompt
+              for (let i = 0; i < conversationHistory.length; i++) {
+                const msg = conversationHistory[i];
                 
-                messages.push({ 
-                  role: msg.isUser ? "user" : "assistant", 
-                  content: msg.content 
-                });
+                if (msg.isUser) {
+                  // Add user message
+                  messages.push({ 
+                    role: "user", 
+                    content: msg.content 
+                  });
+                  
+                  // Look for the corresponding AI response
+                  if (i + 1 < conversationHistory.length && !conversationHistory[i + 1].isUser) {
+                    messages.push({
+                      role: "assistant",
+                      content: conversationHistory[i + 1].content
+                    });
+                    i++; // Skip this message in the next iteration
+                  }
+                }
               }
             }
             
@@ -286,7 +299,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
             const completion = await openai.chat.completions.create({
               model: prompt.model,
-              messages: messages,
+              messages: messages as ChatCompletionMessageParam[],
               temperature: prompt.temperature,
             });
             

@@ -16,6 +16,7 @@ interface ChatScreenProps {
 
 export function ChatScreen({ promptId, promptName, onEndChat }: ChatScreenProps) {
   const [message, setMessage] = useState("");
+  const [initialized, setInitialized] = useState(false);
   const { toast } = useToast();
 
   // Fetch messages for selected prompt
@@ -91,6 +92,27 @@ export function ChatScreen({ promptId, promptName, onEndChat }: ChatScreenProps)
     }
   });
 
+  // Initialize chat when component mounts
+  useEffect(() => {
+    // Check if we already have messages or are in the process of initializing
+    if (
+      !initialized && 
+      !isLoadingMessages && 
+      (!messages || messages.length === 0) && 
+      !initializeChatMutation.isPending
+    ) {
+      // Initialize the chat with AI's first response
+      initializeChatMutation.mutate();
+      setInitialized(true);
+    }
+  }, [
+    initialized, 
+    messages, 
+    isLoadingMessages, 
+    initializeChatMutation, 
+    promptId
+  ]);
+  
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -137,11 +159,21 @@ export function ChatScreen({ promptId, promptName, onEndChat }: ChatScreenProps)
                   isUser={message.isUser}
                 />
               ))
+            ) : initializeChatMutation.isPending ? (
+              <div className="animate-pulse space-y-4 my-6">
+                <div className="bg-blue-100 rounded-tl-2xl rounded-tr-2xl rounded-br-2xl p-4 max-w-[80%]">
+                  <div className="h-4 bg-blue-200 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-blue-200 rounded w-1/2"></div>
+                </div>
+                <div className="text-xs text-gray-500 ml-2">AI Assistant is thinking...</div>
+              </div>
             ) : (
-              <ChatMessage 
-                content={`Hello! I'm your ${promptName} assistant. How can I help you today?`}
-                isUser={false}
-              />
+              <div className="flex justify-center items-center h-full">
+                <div className="text-center text-gray-500 p-8">
+                  <div className="h-8 w-8 border-4 border-t-transparent border-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+                  <p className="text-lg">Initializing chat session...</p>
+                </div>
+              </div>
             )}
           </div>
           
