@@ -23,6 +23,37 @@ export function ChatScreen({ promptId, promptName, onEndChat }: ChatScreenProps)
     queryKey: ["/api/prompts", promptId, "messages"],
     enabled: !!promptId,
   });
+  
+  // Mutation to initialize the chat with the first AI message
+  const initializeChatMutation = useMutation({
+    mutationFn: async () => {
+      if (!promptId) throw new Error("No prompt selected");
+      
+      const response = await apiRequest(
+        "POST", 
+        `/api/prompts/${promptId}/initialize`,
+        {}
+      );
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to initialize chat");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      // Refresh messages to get the AI response
+      queryClient.invalidateQueries({ queryKey: ["/api/prompts", promptId, "messages"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error initializing chat",
+        description: error.message || "There was a problem starting the chat with AI. Please try again or contact an administrator.",
+        variant: "destructive",
+      });
+    }
+  });
 
   // Send message mutation
   const sendMessageMutation = useMutation({
