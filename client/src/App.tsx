@@ -12,7 +12,8 @@ import { AuthProvider, useAuth } from "@/hooks/use-auth";
 
 function Router() {
   const { isAuthenticated, isAdmin, isChecking } = useAuth();
-  const [, navigate] = useLocation();
+  // Use location once for both navigation and path checking
+  const [path, navigate] = useLocation();
   
   // Use the actual window.location.pathname instead of tracking in state
   // This fixes navigation issues with login redirects
@@ -49,9 +50,6 @@ function Router() {
       </div>
     );
   }
-  
-  // Get current path
-  const [path] = useLocation();
   
   // Don't show the navbar on chat page to allow for full-screen chat experience
   const showNavbar = isAuthenticated && path !== "/chat";
