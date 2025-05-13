@@ -34,7 +34,9 @@ export default function ChatPage() {
       return;
     }
     
-    // Clear any previous messages
+    console.log(`Starting chat with prompt ID: ${selectedPromptId}`);
+    
+    // Clear any previous messages for this prompt
     queryClient.removeQueries({ queryKey: ["/api/prompts", selectedPromptId, "messages"] });
     
     // Start the chat

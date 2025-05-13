@@ -112,15 +112,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/prompts/:promptId/initialize", async (req, res) => {
     const promptId = parseInt(req.params.promptId);
     
+    console.log(`Initializing chat for prompt ID: ${promptId}`);
+    
     if (isNaN(promptId)) {
+      console.error("Invalid prompt ID:", req.params.promptId);
       return res.status(400).json({ message: "Invalid prompt ID" });
     }
     
     const prompt = await storage.getPrompt(promptId);
     
     if (!prompt) {
+      console.error(`Prompt not found with ID: ${promptId}`);
       return res.status(404).json({ message: "Prompt not found" });
     }
+    
+    console.log(`Found prompt: ${prompt.name}, provider: ${prompt.provider}, model: ${prompt.model}`);
+    console.log(`Initial system prompt: "${prompt.content}"`);
+    
     
     try {
       // Get AI response based on the initial prompt
@@ -207,15 +215,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/prompts/:promptId/messages", async (req, res) => {
     const promptId = parseInt(req.params.promptId);
     
+    console.log(`Received message for prompt ID: ${promptId}`, req.body);
+    
     if (isNaN(promptId)) {
+      console.error("Invalid prompt ID:", req.params.promptId);
       return res.status(400).json({ message: "Invalid prompt ID" });
     }
     
     const prompt = await storage.getPrompt(promptId);
     
     if (!prompt) {
+      console.error(`Prompt not found with ID: ${promptId}`);
       return res.status(404).json({ message: "Prompt not found" });
     }
+    
+    console.log(`Found prompt for message: ${prompt.name}, provider: ${prompt.provider}, model: ${prompt.model}`);
     
     try {
       // Save the user message

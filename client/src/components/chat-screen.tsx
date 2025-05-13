@@ -94,13 +94,21 @@ export function ChatScreen({ promptId, promptName, onEndChat }: ChatScreenProps)
 
   // Initialize chat when component mounts
   useEffect(() => {
+    // Reset initialized state when prompt changes
+    if (promptId) {
+      setInitialized(false);
+    }
+    
     // Check if we already have messages or are in the process of initializing
     if (
+      promptId &&
       !initialized && 
       !isLoadingMessages && 
-      (!messages || messages.length === 0) && 
+      Array.isArray(messages) && 
+      messages.length === 0 && 
       !initializeChatMutation.isPending
     ) {
+      console.log(`Initializing chat for prompt ${promptId}`);
       // Initialize the chat with AI's first response
       initializeChatMutation.mutate();
       setInitialized(true);
@@ -109,7 +117,6 @@ export function ChatScreen({ promptId, promptName, onEndChat }: ChatScreenProps)
     initialized, 
     messages, 
     isLoadingMessages, 
-    initializeChatMutation, 
     promptId
   ]);
   
